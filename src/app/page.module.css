@@ -3,8 +3,9 @@
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  padding: 6rem;
+  padding: 4rem 1rem 4rem 3rem;
   min-height: 100vh;
+  /* background-color: black; */
 }
 
 .description {
