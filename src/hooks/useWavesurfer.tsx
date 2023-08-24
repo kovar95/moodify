@@ -2,8 +2,7 @@ import { RefObject, useEffect, useRef, useState } from "react";
 import WaveSurfer from "wavesurfer.js";
 
 const options = {
-  // progressColor: "#1cc39f",
-  waveColor: "white",
+  waveColor: "gray",
   fillParent: true,
   responsive: true,
   autoplay: true,
@@ -15,7 +14,6 @@ const options = {
 const useWavesurfer = (
   waveContainerRef: RefObject<HTMLElement>,
   audioSrc: string | undefined,
-  onFinish: () => void,
   progressColor?: string
 ) => {
   const waveSurferRef = useRef<WaveSurfer | null>(null);
@@ -34,7 +32,6 @@ const useWavesurfer = (
 
       waveSurferRef.current.on("play", () => setIsPlaying(true));
       waveSurferRef.current.on("pause", () => setIsPlaying(false));
-      waveSurferRef.current.on("finish", () => onFinish());
 
       waveSurferRef.current.setVolume(
         audioVolume.isMuted ? 0 : audioVolume.value
@@ -43,7 +40,7 @@ const useWavesurfer = (
     return () => {
       waveSurferRef?.current?.destroy();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [audioSrc]);
 
   waveSurferRef?.current?.setVolume(

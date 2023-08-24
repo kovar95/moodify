@@ -1,68 +1,20 @@
 "use client";
 
 import { useState, ChangeEvent, MouseEvent, FC } from "react";
-import { Box, MenuItem } from "@mui/material";
+import { useTheme } from "@mui/material";
 import PlaylistAddIcon from "@mui/icons-material/PlaylistAdd";
-import AddIcon from "@mui/icons-material/Add";
 import { usePlaylists } from "@/app/providers/PlaylistsContextProvider";
-import { styled } from "@mui/material";
-import TextField from "@mui/material/TextField";
 import { colorPalettes } from "@/constants";
-import { emotions } from "./Emotions";
-import { StyledIcon } from ".";
-
-const StyledMenuItem = styled(MenuItem)(() => ({
-  ":hover": {
-    backgroundColor: "#1976d20a",
-  },
-  transition: "all .9s ease",
-  paddingRight: 0,
-}));
-
-const StyledInput = styled(TextField)(() => ({
-  "& input": {
-    color: "#bdbdbd",
-    fontSize: "14px",
-    padding: "7px",
-    outline: "1px #ffffff36 solid",
-    width: "125px",
-    borderRadius: "4px",
-  },
-  "& fieldset.MuiOutlinedInput-notchedOutline": {
-    borderColor: "#71fab5 !important",
-  },
-}));
-
-const StyledColorField = styled(Box)(() => ({
-  borderRadius: "50px",
-  width: "25px",
-  height: "25px",
-  marginLeft: "6px",
-  position: "relative",
-}));
-
-const StyledColorBox = styled(Box)(() => ({
-  backgroundColor: "#8080803b",
-  borderRadius: "50px",
-  padding: "24px 2px 0",
-  position: "absolute",
-  top: 0,
-  width: "100%",
-}));
-
-const StyledBox = styled(Box)(() => ({
-  width: "18px",
-  height: "18px",
-  margin: "6px auto",
-  borderRadius: "50px",
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  opacity: "0.8",
-  "&:hover": {
-    opacity: "1",
-  },
-}));
+import { emotions } from "../../ui/Emotions";
+import {
+  AddButton,
+  StyledBox,
+  StyledColorBox,
+  StyledColorField,
+  StyledInput,
+  StyledMenuItem,
+} from "@/ui/Playlist";
+import { StyledIcon } from "@/ui/Sidebar";
 
 type Playlist = {
   name: string;
@@ -76,11 +28,12 @@ type Props = {
 };
 
 const AddPlaylist: FC<Props> = ({ openedSidebar, onOpenSidebar }) => {
+  const theme = useTheme();
   const { createPlaylist } = usePlaylists();
 
   const [newPlaylist, setNewPlaylist] = useState<Playlist>({
     name: "",
-    color: "#71fab5",
+    color: theme.palette.info.main,
     mood: "happy",
   });
 
@@ -113,7 +66,7 @@ const AddPlaylist: FC<Props> = ({ openedSidebar, onOpenSidebar }) => {
     createPlaylist(newPlaylist);
     setNewPlaylist({
       name: "",
-      color: "#71fab5",
+      color: theme.palette.info.main,
       mood: "happy",
     });
     setOpenInput(false);
@@ -129,74 +82,42 @@ const AddPlaylist: FC<Props> = ({ openedSidebar, onOpenSidebar }) => {
           }
           setOpenInput(!openInput);
         }}
-        sx={{
-          color: "#646464",
-          paddingLeft: openedSidebar ? "22px" : "12px",
-        }}
+        opened={openedSidebar ? 1 : 0}
       >
         <StyledIcon>
-          <PlaylistAddIcon
-            sx={{
-              color: "#646464",
-            }}
-          />
+          <PlaylistAddIcon />
           {openedSidebar ? "Add playlist" : ""}
         </StyledIcon>
       </StyledMenuItem>
       {openInput && openedSidebar && (
-        <StyledMenuItem
-          key="add-playlist-input"
-          sx={{ backgroundColor: "#2d2727" }}
-        >
+        <StyledMenuItem key="add-playlist-input" opened={openedSidebar ? 1 : 0}>
           <StyledInput
             onChange={onChangePlaylistName}
             value={newPlaylist.name}
           />
           <StyledColorField
-            sx={{
-              backgroundColor: newPlaylist.color,
-            }}
+            palette={newPlaylist.color}
             onClick={() => setOpenColours(!openColours)}
           >
-            <StyledColorBox
-              sx={{
-                visibility: openColours ? "visible" : "hidden",
-                height: openColours ? "auto" : "0",
-              }}
-            >
+            <StyledColorBox show={openColours ? 1 : 0}>
               {colorPalettes.map((color) => (
                 <StyledBox
                   key={color}
-                  sx={{
-                    backgroundColor: color,
-                  }}
+                  palette={color}
                   onClick={(e) => onChangePlaylistColor(e, color)}
                 />
               ))}
             </StyledColorBox>
           </StyledColorField>
-          <StyledColorField
-            sx={{
-              backgroundColor: "#fff",
-            }}
-            onClick={() => setOpenMood(!openMood)}
-          >
+          <StyledColorField onClick={() => setOpenMood(!openMood)}>
             {
               emotions.find((emotion) => emotion.face === newPlaylist.mood)
                 ?.Icon
             }
-            <StyledColorBox
-              sx={{
-                visibility: openMood ? "visible" : "hidden",
-                height: openMood ? "auto" : "0",
-              }}
-            >
+            <StyledColorBox show={openMood ? 1 : 0}>
               {emotions.map((emotion) => (
                 <StyledBox
                   key={emotion.face}
-                  sx={{
-                    backgroundColor: "#fff",
-                  }}
                   onClick={(e) => onChangePlaylistMood(e, emotion.face)}
                 >
                   {emotion.Icon}
@@ -204,10 +125,7 @@ const AddPlaylist: FC<Props> = ({ openedSidebar, onOpenSidebar }) => {
               ))}
             </StyledColorBox>
           </StyledColorField>
-          <AddIcon
-            sx={{ marginLeft: "8px", color: "#71fab5" }}
-            onClick={onAddPlaylist}
-          />
+          <AddButton onClick={onAddPlaylist} />
         </StyledMenuItem>
       )}
     </>

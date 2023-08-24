@@ -18,7 +18,10 @@ export default function SearchContextProvider({
 }: Props): React.ReactElement {
   const [searchInput, setSearchInput] = useState<string>("eminem");
 
-  const contextValues = useMemo(() => ({ searchInput, setSearchInput }), [searchInput]);
+  const contextValues = useMemo(
+    () => ({ searchInput, setSearchInput }),
+    [searchInput]
+  );
 
   return (
     <SearchContext.Provider value={contextValues}>

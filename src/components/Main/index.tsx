@@ -1,32 +1,20 @@
 "use client";
 
 import useTracks from "@/hooks/useTracks";
-import styles from "../../app/page.module.css";
-import { Box, Stack, styled, useMediaQuery } from "@mui/material";
+import { Alert, Box, Stack, useMediaQuery, useTheme } from "@mui/material";
 import Image from "next/image";
 import { useSearch } from "@/app/providers/SearchContextProvider";
 import Track from "./Track";
 import { usePlaylists } from "@/app/providers/PlaylistsContextProvider";
 import Player from "../Player";
-import { getDuration } from "@/utils/getDuration";
-
-const CurrentTrack = styled(Stack)(() => ({
-  // maxWidth: "26rem",
-  // maxHeight: "32rem",
-  padding: "20px",
-  backgroundColor: "#ffffff66",
-  borderRadius: "15px",
-  position: "relative",
-  flexDirection: "row",
-  width: "100%",
-  "& img": {
-    borderRadius: "15px",
-    // position: "relative !important",
-  },
-}));
+import { Container, CurrentTrack, MainContainer, Tracks } from "@/ui/Main";
+import ScreenLoader from "@/ui/Loader";
 
 const Main = () => {
+  const theme = useTheme();
+
   const { searchInput } = useSearch();
+
   const {
     currentPlaylist,
     currentItems,
@@ -34,15 +22,14 @@ const Main = () => {
     playlists,
     setCurrentTrack,
   } = usePlaylists();
-  const { data: searchedItems } = useTracks(searchInput);
+
+  const { data: searchedItems, isLoading, error } = useTracks(searchInput);
 
   const mainColor = currentPlaylist
     ? playlists.find((playlist) => playlist.name === currentPlaylist)?.color
-    : "#71fab5";
+    : theme.palette.info.main;
 
   const data = currentPlaylist ? currentItems : searchedItems;
-
-  console.log(data);
 
   const playNext = () => {
     const currentTrackIndex = data.findIndex(
@@ -64,33 +51,28 @@ const Main = () => {
     setCurrentTrack(data[previousTrackIndex]);
   };
 
+  const biggerSize = useMediaQuery("(min-width: 450px)");
+
   return (
-    <main
-      className={styles.main}
-      style={{ background: `linear-gradient(${mainColor}, black)` }}
-    >
-      <Stack
-        // direction="row"
-        width="100%"
-        justifyContent="space-between"
-        alignItems="center"
-        gap={2}
-        sx={{ flexDirection: { xs: "column", sm: "row" } }}
-      >
-        <CurrentTrack
-          sx={{ display: { xs: currentTrack ? "flex" : "none", sm: "none" } }}
-          gap={2}
-        >
-          <Image
-            src={currentTrack?.album?.cover_big ?? data?.[0]?.album?.cover_big}
-            alt="current track"
-            width={useMediaQuery("(min-width: 450px)") ? 100 : 50}
-            height={useMediaQuery("(min-width: 450px)") ? 100 : 50}
-            // objectFit="cover"
-            // fill
-            // style={{position: "relative"}}
-            unoptimized
-          />
+    <MainContainer mainclr={mainColor as string}>
+      {error && (
+        <Alert severity="error" color="error">
+          {error}
+        </Alert>
+      )}
+      <Container gap={2}>
+        <CurrentTrack show={currentTrack ? 1 : 0} gap={2}>
+          {currentTrack && (
+            <Image
+              src={
+                currentTrack?.album?.cover_big ?? data?.[0]?.album?.cover_big
+              }
+              alt="current track"
+              width={biggerSize ? 100 : 50}
+              height={biggerSize ? 100 : 50}
+              unoptimized
+            />
+          )}
           <Stack>
             <Stack textAlign="start" gap={1}>
               <Box
@@ -105,26 +87,18 @@ const Main = () => {
             </Stack>
           </Stack>
         </CurrentTrack>
-        <Stack
-          gap={1}
-          direction="column"
-          maxHeight="75vh"
-          overflow="scroll"
-          flexWrap="wrap"
-          width="100%"
-          sx={{
-            flexDirection: { xs: "column", sm: "row" },
-            flexWrap: { xs: "nowrap", sm: "wrap" },
-            justifyContent: { xs: "", sm: "space-around" },
-          }}
-        >
-          {data?.map((track) => (
-            <Track key={track.id} track={track} />
-          ))}
-        </Stack>
-      </Stack>
+        {isLoading ? (
+          <ScreenLoader />
+        ) : (
+          <Tracks gap={1}>
+            {data?.map((track) => (
+              <Track key={track.id} track={track} />
+            ))}
+          </Tracks>
+        )}
+      </Container>
       <Player onPlayNext={playNext} onPlayPrevious={playPrevious} />
-    </main>
+    </MainContainer>
   );
 };
 
